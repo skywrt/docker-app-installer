@@ -5,7 +5,6 @@
 # Version: 1.0.0
 # Author: skywrt
 # Description: Docker 服务一键部署器
-# Repository: https://github.com/skywrt/docker-app-installer
 # ==================================================
 
 set -euo pipefail
@@ -18,25 +17,25 @@ LOG_FILE="/var/log/docker-app-installer.log"
 # =========================
 # 颜色定义
 # =========================
-RED="\033[31m"
-GREEN="\033[32m"
-YELLOW="\033[33m"
-BLUE="\033[34m"
-CYAN="\033[36m"
-BOLD="\033[1m"
-RESET="\033[0m"
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
 
 # =========================
-# 通用函数
+# 通用输出
 # =========================
-info()    { echo -e "${BLUE}[INFO]${RESET} $*"; }
-success() { echo -e "${GREEN}[OK]${RESET} $*"; }
-warn()    { echo -e "${YELLOW}[WARN]${RESET} $*"; }
-error()   { echo -e "${RED}[ERR]${RESET} $*"; }
-title()   { echo -e "${BOLD}${CYAN}$*${RESET}"; }
+info()    { echo -e "${BLUE}[INFO]${NC} $*"; }
+success() { echo -e "${GREEN}[OK]${NC} $*"; }
+warn()    { echo -e "${YELLOW}[WARN]${NC} $*"; }
+error()   { echo -e "${RED}[ERR]${NC} $*"; }
+title()   { echo -e "${BOLD}${CYAN}$*${NC}"; }
 
 log() {
-  echo -e "${CYAN}[$(date '+%F %T')]${RESET} $*" | tee -a "$LOG_FILE"
+  echo -e "${CYAN}[$(date '+%F %T')]${NC} $*" | tee -a "$LOG_FILE"
 }
 
 pause() {
@@ -192,9 +191,9 @@ show_service_url_https() {
 
 print_banner() {
   clear
-  echo -e "${BOLD}${CYAN}========================================${RESET}"
-  echo -e "${BOLD}${CYAN}       Docker 服务一键部署器${RESET}"
-  echo -e "${BOLD}${CYAN}========================================${RESET}"
+  echo -e "${BOLD}${CYAN}========================================${NC}"
+  echo -e "${BOLD}${CYAN}       Docker 服务一键部署器${NC}"
+  echo -e "${BOLD}${CYAN}========================================${NC}"
   echo "版本: ${VERSION}"
   echo "作者: ${AUTHOR}"
   echo
@@ -771,11 +770,19 @@ EOF
       3) stack_menu ;;
       4) uninstall_menu ;;
       5) show_status; pause ;;
-      0) exit 0 ;;
+      0)
+        info "退出脚本"
+        exit 0
+        ;;
       *) warn "无效选择"; pause ;;
     esac
   done
 }
+
+# =========================
+# 信号处理
+# =========================
+trap 'echo -e "${YELLOW}[INFO]${NC} 退出脚本"; exit 0' INT TERM
 
 # =========================
 # 主入口
