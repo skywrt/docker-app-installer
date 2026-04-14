@@ -2,14 +2,14 @@
 
 # ==================================================
 # Docker App Installer
-# Version: 1.0.0
+# Version: 1.0.1
 # Author: skywrt
 # Description: Docker 服务一键部署器
 # ==================================================
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 AUTHOR="skywrt"
 BASE_DIR="/docker"
 LOG_FILE="/var/log/docker-app-installer.log"
@@ -87,8 +87,7 @@ check_compose_available() {
   local compose_cmd
   compose_cmd="$(get_compose_cmd)"
   if [[ -z "$compose_cmd" ]]; then
-    error "未找到 Docker Compose。请先安装 Docker Compose。"
-    exit 1
+    warn "未检测到 Docker Compose，后续安装组合服务时需要先安装。"
   fi
 }
 
@@ -162,6 +161,8 @@ install_docker() {
       yum -y install docker-compose-plugin || true
     elif check_cmd dnf; then
       dnf -y install docker-compose-plugin || true
+    else
+      warn "未识别的包管理器，请手动安装 Docker Compose。"
     fi
   fi
 
@@ -493,7 +494,7 @@ EOF
   show_service_url "filebrowser" "$filebrowser_port"
   show_service_url "qBittorrent WebUI" "$qb_webui"
   show_service_url "Emby" "$emby_port"
-  echo "- Emby HTTPS: https://$(get_server_ip):${emby_https_port}"
+  show_service_url_https "Emby HTTPS" "$emby_https_port"
   echo "- qBittorrent BT: ${qb_bt}/tcp, ${qb_bt}/udp"
 }
 
@@ -679,11 +680,28 @@ uninstall_stack() {
   local compose
   compose="$(get_compose_cmd)"
 
-  if [[ -d "$dir" ]]; then
+  if [[ ! -d "$dir" ]]; then
+    warn "目录不存在：$dir"
+    return 0
+  fi
+
+  if [[ -n "$compose" ]]; then
     (cd "$dir" && $compose down) || true
     success "已停止：$dir"
   else
-    warn "目录不存在：$dir"
+    warn "未找到 compose 命令，仅执行目录清理操作前的检查。"
+  fi
+
+  echo
+  read -rp "是否删除数据目录？此操作不可恢复 [y/N]: " ans
+  ans="${ans:-N}"
+
+  if [[ "$ans" =~ ^[Yy]$ ]]; then
+    info "正在删除数据目录..."
+    rm -rf "$dir"
+    success "已删除：$dir"
+  else
+    info "已保留数据目录：$dir"
   fi
 }
 
