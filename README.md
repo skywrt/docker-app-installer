@@ -77,28 +77,19 @@ docker-service-installer/
 
 ---
 
-## 快速开始
+## 快速安装
 
-### 1. 下载脚本
-
-将 docker-app-installer.sh 保存到服务器本地,例如:
+### 方式一：直接执行（推荐）
 
 ```
-wget -O docker-app-installer.sh https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
 ```
 
-或者手动创建文件并粘贴脚本内容。
-
-### 2. 授权执行
-
-```
-chmod +x docker-app-installer.sh
-```
-
-### 3. 运行脚本
+### 方式二：国内用户（无代理可用）
+如果访问 GitHub Raw 较慢或失败，可使用 gh-proxy 代理：
 
 ```
-sudo ./docker-app-installer.sh
+bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
 ```
 ---
 
