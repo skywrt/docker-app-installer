@@ -55,9 +55,11 @@
 
 ## 支持环境
 
+```
 - Debian / Ubuntu / CentOS / Rocky Linux / AlmaLinux / Fedora 等主流 Linux 发行版
 - 支持 Docker Compose v2
 - 需要 root 权限运行
+```
 
 ---
 
@@ -123,7 +125,9 @@ sudo ./docker-app-installer.sh
 
 访问地址示例:
 
+```
 http://服务器IP:9000
+```
 
 ### qBittorrent
 
@@ -134,7 +138,9 @@ http://服务器IP:9000
 
 访问地址示例:
 
+```
 http://服务器IP:8080
+```
 
 ### FileBrowser
 
@@ -144,7 +150,9 @@ http://服务器IP:8080
 
 访问地址示例:
 
+```
 http://服务器IP:1234
+```
 
 ---
 
@@ -154,6 +162,7 @@ http://服务器IP:1234
 
 该组合服务包含以下组件:
 
+```
 - postgres_db_online
 - postgres_avdb
 - db_online
@@ -162,9 +171,11 @@ http://服务器IP:1234
 - filebrowser
 - qbittorrent
 - emby
+```
 
 #### 默认端口
 
+```
 - db_online: 9090
 - avdb: 8000
 - mdc: 9208
@@ -173,6 +184,7 @@ http://服务器IP:1234
 - qBittorrent BT: 6881
 - Emby: 8096
 - Emby HTTPS: 8920
+```
 
 #### 访问示例
 
@@ -190,6 +202,7 @@ https://服务器IP:8920
 
 该组合服务包含以下组件:
 
+```
 - portainer-zh
 - filebrowser
 - dockercopilot
@@ -198,9 +211,11 @@ https://服务器IP:8920
 - moviepilot
 - cookiecloud
 - watchtower
+```
 
 #### 默认端口
 
+```
 - portainer-zh: 9000
 - filebrowser: 1234
 - dockercopilot: 12712
@@ -209,6 +224,7 @@ https://服务器IP:8920
 - Emby: 8096
 - MoviePilot: 3000
 - CookieCloud: 8088
+```
 
 #### 访问示例
 
@@ -230,14 +246,18 @@ http://服务器IP:8088
 
 如果发现冲突,会提示类似:
 
+```
 端口 8080 已被占用。
 是否修改 qBittorrent WebUI 端口?[Y/n]
+```
 
 你可以:
 
+```
 - 输入 Y 修改端口
 - 输入 n 取消安装
 - 直接回车表示默认选择修改
+```
 
 如果手动修改端口,脚本会自动写入新的 compose 配置并继续安装。
 
@@ -275,7 +295,9 @@ http://服务器IP:8088
 
 卸载逻辑会执行:
 
+```
 docker compose down
+```
 
 然后停止对应服务。
 
