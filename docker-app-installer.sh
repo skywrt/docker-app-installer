@@ -1,24 +1,72 @@
 #!/usr/bin/env bash
 
+# ==================================================
+# Docker App Installer
+# Version: 1.0.0
+# Author: skywrt
+# Description: Docker 服务一键部署器
+# Repository: https://github.com/skywrt/docker-app-installer
+# ==================================================
+
 set -euo pipefail
 
+VERSION="1.0.0"
+AUTHOR="skywrt"
 BASE_DIR="/docker"
 LOG_FILE="/var/log/docker-app-installer.log"
 
 # =========================
+# 颜色定义
+# =========================
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+CYAN="\033[36m"
+BOLD="\033[1m"
+RESET="\033[0m"
+
+# =========================
 # 通用函数
 # =========================
+info()    { echo -e "${BLUE}[INFO]${RESET} $*"; }
+success() { echo -e "${GREEN}[OK]${RESET} $*"; }
+warn()    { echo -e "${YELLOW}[WARN]${RESET} $*"; }
+error()   { echo -e "${RED}[ERR]${RESET} $*"; }
+title()   { echo -e "${BOLD}${CYAN}$*${RESET}"; }
+
 log() {
-  echo "[$(date '+%F %T')] $*" | tee -a "$LOG_FILE"
+  echo -e "${CYAN}[$(date '+%F %T')]${RESET} $*" | tee -a "$LOG_FILE"
 }
 
 pause() {
   read -rp "按回车继续..."
 }
 
+usage() {
+  cat <<EOF
+${BOLD}Docker 服务一键部署器${RESET}
+
+版本: ${VERSION}
+作者: ${AUTHOR}
+
+用法:
+  $0
+  $0 -h | --help
+
+说明:
+  直接执行脚本后会进入交互式菜单。
+  菜单统一使用 0 作为返回/退出。
+
+示例:
+  bash <(curl -fsSL https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
+  bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
+EOF
+}
+
 require_root() {
   if [[ $EUID -ne 0 ]]; then
-    echo "请使用 root 执行此脚本。"
+    error "请使用 root 执行此脚本。"
     exit 1
   fi
 }
@@ -65,7 +113,7 @@ prompt_port() {
       echo "$value"
       return 0
     else
-      echo "端口格式不合法，请重新输入。"
+      warn "端口格式不合法，请重新输入。"
     fi
   done
 }
@@ -76,13 +124,13 @@ check_and_prompt_port() {
   local port="$default_port"
 
   while port_in_use "$port"; do
-    echo "端口 ${port} 已被占用。"
+    warn "端口 ${port} 已被占用。"
     read -rp "是否修改 ${name} 端口？[Y/n] " ans
     ans="${ans:-Y}"
     if [[ "$ans" =~ ^[Yy]$ ]]; then
       port=$(prompt_port "$name" "$default_port")
     else
-      echo "已取消安装。"
+      error "已取消安装。"
       exit 1
     fi
   done
@@ -92,15 +140,16 @@ check_and_prompt_port() {
 
 install_docker() {
   if ! check_cmd docker; then
-    echo "正在安装 Docker..."
+    info "正在安装 Docker..."
     curl -fsSL https://get.docker.com | sh
     systemctl enable --now docker
+    success "Docker 安装完成。"
   else
-    echo "Docker 已安装。"
+    success "Docker 已安装。"
   fi
 
   if ! docker compose version >/dev/null 2>&1 && ! check_cmd docker-compose; then
-    echo "正在安装 Docker Compose 插件..."
+    info "正在安装 Docker Compose 插件..."
     if check_cmd apt-get; then
       apt-get update
       apt-get -y install docker-compose-plugin
@@ -110,6 +159,8 @@ install_docker() {
       dnf -y install docker-compose-plugin || true
     fi
   fi
+
+  success "Docker 环境检查完成。"
 }
 
 check_required_dirs() {
@@ -131,6 +182,17 @@ show_service_url_https() {
   local ip
   ip="$(get_server_ip)"
   echo "- ${name}: https://${ip}:${port}"
+}
+
+print_banner() {
+  clear
+  cat <<EOF
+${BOLD}${CYAN}========================================
+       Docker 服务一键部署器
+========================================${RESET}
+版本: ${VERSION}
+作者: ${AUTHOR}
+EOF
 }
 
 # =========================
@@ -157,7 +219,7 @@ EOF
 
   (cd "$dir" && $(compose_cmd) up -d)
   echo
-  echo "Portainer 安装完成。"
+  success "Portainer 安装完成。"
   echo "访问地址："
   show_service_url "Portainer" "$port"
 }
@@ -188,7 +250,7 @@ EOF
 
   (cd "$dir" && $(compose_cmd) up -d)
   echo
-  echo "FileBrowser 安装完成。"
+  success "FileBrowser 安装完成。"
   echo "访问地址："
   show_service_url "FileBrowser" "$port"
 }
@@ -222,7 +284,7 @@ EOF
 
   (cd "$dir" && $(compose_cmd) up -d)
   echo
-  echo "qBittorrent 安装完成。"
+  success "qBittorrent 安装完成。"
   echo "访问地址："
   show_service_url "qBittorrent WebUI" "$webui"
   echo "- qBittorrent BT: ${bt}/tcp, ${bt}/udp"
@@ -415,7 +477,7 @@ EOF
 
   (cd "$dir" && $(compose_cmd) up -d)
   echo
-  echo "AV 媒体订阅服务安装完成。"
+  success "AV 媒体订阅服务安装完成。"
   echo "访问地址："
   show_service_url "db_online" "$db_online_port"
   show_service_url "avdb" "$avdb_port"
@@ -424,6 +486,7 @@ EOF
   show_service_url "qBittorrent WebUI" "$qb_webui"
   show_service_url "Emby" "$emby_port"
   echo "- Emby HTTPS: https://$(get_server_ip):${emby_https_port}"
+  echo "- qBittorrent BT: ${qb_bt}/tcp, ${qb_bt}/udp"
 }
 
 # =========================
@@ -580,7 +643,7 @@ EOF
 
   (cd "$dir" && $(compose_cmd) up -d)
   echo
-  echo "影视订阅服务安装完成。"
+  success "影视订阅服务安装完成。"
   echo "访问地址："
   show_service_url "Portainer" "$portainer_port"
   show_service_url "FileBrowser" "$filebrowser_port"
@@ -606,9 +669,9 @@ uninstall_stack() {
   local dir="$1"
   if [[ -d "$dir" ]]; then
     (cd "$dir" && $(compose_cmd) down) || true
-    echo "已停止：$dir"
+    success "已停止：$dir"
   else
-    echo "目录不存在：$dir"
+    warn "目录不存在：$dir"
   fi
 }
 
@@ -624,15 +687,15 @@ single_app_menu() {
 1) Portainer
 2) qBittorrent
 3) FileBrowser
-4) 返回主菜单
+0) 返回主菜单
 EOF
     read -rp "请选择: " choice
     case "$choice" in
       1) install_portainer; pause ;;
       2) install_qbittorrent; pause ;;
       3) install_filebrowser; pause ;;
-      4) return ;;
-      *) echo "无效选择"; pause ;;
+      0) return ;;
+      *) warn "无效选择"; pause ;;
     esac
   done
 }
@@ -645,14 +708,14 @@ stack_menu() {
 
 1) AV 媒体订阅服务
 2) 影视订阅服务
-3) 返回主菜单
+0) 返回主菜单
 EOF
     read -rp "请选择: " choice
     case "$choice" in
       1) install_av_stack; pause ;;
       2) install_movie_stack; pause ;;
-      3) return ;;
-      *) echo "无效选择"; pause ;;
+      0) return ;;
+      *) warn "无效选择"; pause ;;
     esac
   done
 }
@@ -665,32 +728,28 @@ uninstall_menu() {
 
 1) 卸载 AV 媒体订阅服务
 2) 卸载 影视订阅服务
-3) 返回主菜单
+0) 返回主菜单
 EOF
     read -rp "请选择: " choice
     case "$choice" in
       1) uninstall_stack "$BASE_DIR/av-stack"; pause ;;
       2) uninstall_stack "$BASE_DIR/movie-stack"; pause ;;
-      3) return ;;
-      *) echo "无效选择"; pause ;;
+      0) return ;;
+      *) warn "无效选择"; pause ;;
     esac
   done
 }
 
 main_menu() {
   while true; do
-    clear
+    print_banner
     cat <<EOF
-========================================
-       Docker 服务一键部署器
-========================================
-
 1) 基础安装（Docker + Docker Compose）
 2) 单应用安装
 3) 组合服务安装
 4) 应用卸载
 5) 查看当前状态
-6) 退出
+0) 退出
 EOF
     read -rp "请选择: " choice
     case "$choice" in
@@ -699,8 +758,8 @@ EOF
       3) stack_menu ;;
       4) uninstall_menu ;;
       5) show_status; pause ;;
-      6) exit 0 ;;
-      *) echo "无效选择"; pause ;;
+      0) exit 0 ;;
+      *) warn "无效选择"; pause ;;
     esac
   done
 }
@@ -708,6 +767,11 @@ EOF
 # =========================
 # 主入口
 # =========================
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
 require_root
 ensure_base_dir
 check_required_dirs
