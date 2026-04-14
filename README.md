@@ -65,11 +65,13 @@
 
 建议如下:
 
+```
 docker-service-installer/
 ├── docker-app-installer.sh
 ├── README.md
 ├── LICENSE
 └── .gitignore
+```
 
 ---
 
@@ -79,18 +81,23 @@ docker-service-installer/
 
 将 docker-app-installer.sh 保存到服务器本地,例如:
 
+```
 wget -O docker-app-installer.sh https://raw.githubusercontent.com/你的用户名/你的仓库名/main/docker-app-installer.sh
+```
 
 或者手动创建文件并粘贴脚本内容。
 
 ### 2. 授权执行
 
+```
 chmod +x docker-app-installer.sh
+```
 
 ### 3. 运行脚本
 
+```
 sudo ./docker-app-installer.sh
-
+```
 ---
 
 ## 菜单说明
