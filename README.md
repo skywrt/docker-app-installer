@@ -89,7 +89,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/skywrt/docker-app-installer/
 如果访问 GitHub Raw 较慢或失败，可使用 gh-proxy 代理：
 
 ```
-bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
+bash <(curl -fsSL https://gh-proxy.com/raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
 ```
 ---
 
