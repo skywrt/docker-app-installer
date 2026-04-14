@@ -84,7 +84,7 @@ docker-service-installer/
 将 docker-app-installer.sh 保存到服务器本地,例如:
 
 ```
-wget -O docker-app-installer.sh https://raw.githubusercontent.com/你的用户名/你的仓库名/main/docker-app-installer.sh
+wget -O docker-app-installer.sh https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh
 ```
 
 或者手动创建文件并粘贴脚本内容。
@@ -433,4 +433,4 @@ docker compose down
 
 ## 作者
 
-由你维护和持续扩展的 Docker 服务部署脚本项目。
+由skywrt维护和持续扩展的 Docker 服务部署脚本项目。
