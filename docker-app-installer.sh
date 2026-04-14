@@ -45,7 +45,7 @@ pause() {
 
 usage() {
   cat <<EOF
-${BOLD}Docker 服务一键部署器${RESET}
+Docker 服务一键部署器
 
 版本: ${VERSION}
 作者: ${AUTHOR}
@@ -56,11 +56,6 @@ ${BOLD}Docker 服务一键部署器${RESET}
 
 说明:
   直接执行脚本后会进入交互式菜单。
-  菜单统一使用 0 作为返回/退出。
-
-示例:
-  bash <(curl -fsSL https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
-  bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/skywrt/docker-app-installer/main/docker-app-installer.sh)
 EOF
 }
 
@@ -75,16 +70,27 @@ ensure_base_dir() {
   mkdir -p "$BASE_DIR"
 }
 
-compose_cmd() {
+check_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+get_compose_cmd() {
   if docker compose version >/dev/null 2>&1; then
     echo "docker compose"
-  else
+  elif check_cmd docker-compose; then
     echo "docker-compose"
+  else
+    echo ""
   fi
 }
 
-check_cmd() {
-  command -v "$1" >/dev/null 2>&1
+check_compose_available() {
+  local compose_cmd
+  compose_cmd="$(get_compose_cmd)"
+  if [[ -z "$compose_cmd" ]]; then
+    error "未找到 Docker Compose。请先安装 Docker Compose。"
+    exit 1
+  fi
 }
 
 get_server_ip() {
@@ -186,13 +192,12 @@ show_service_url_https() {
 
 print_banner() {
   clear
-  cat <<EOF
-${BOLD}${CYAN}========================================
-       Docker 服务一键部署器
-========================================${RESET}
-版本: ${VERSION}
-作者: ${AUTHOR}
-EOF
+  echo -e "${BOLD}${CYAN}========================================${RESET}"
+  echo -e "${BOLD}${CYAN}       Docker 服务一键部署器${RESET}"
+  echo -e "${BOLD}${CYAN}========================================${RESET}"
+  echo "版本: ${VERSION}"
+  echo "作者: ${AUTHOR}"
+  echo
 }
 
 # =========================
@@ -200,7 +205,8 @@ EOF
 # =========================
 install_portainer() {
   local dir="$BASE_DIR/portainer"
-  local port
+  local port compose
+  compose="$(get_compose_cmd)"
   port=$(check_and_prompt_port "Portainer" 9000)
   mkdir -p "$dir/data"
 
@@ -217,7 +223,7 @@ services:
     restart: always
 EOF
 
-  (cd "$dir" && $(compose_cmd) up -d)
+  (cd "$dir" && $compose up -d)
   echo
   success "Portainer 安装完成。"
   echo "访问地址："
@@ -226,7 +232,8 @@ EOF
 
 install_filebrowser() {
   local dir="$BASE_DIR/filebrowser"
-  local port
+  local port compose
+  compose="$(get_compose_cmd)"
   port=$(check_and_prompt_port "FileBrowser" 1234)
   mkdir -p "$dir/config" "$dir/data"
 
@@ -248,7 +255,7 @@ services:
     restart: always
 EOF
 
-  (cd "$dir" && $(compose_cmd) up -d)
+  (cd "$dir" && $compose up -d)
   echo
   success "FileBrowser 安装完成。"
   echo "访问地址："
@@ -257,7 +264,8 @@ EOF
 
 install_qbittorrent() {
   local dir="$BASE_DIR/qbittorrent"
-  local webui bt
+  local webui bt compose
+  compose="$(get_compose_cmd)"
   webui=$(check_and_prompt_port "qBittorrent WebUI" 8080)
   bt=$(check_and_prompt_port "qBittorrent BT" 6881)
   mkdir -p "$dir/config"
@@ -282,7 +290,7 @@ services:
     restart: always
 EOF
 
-  (cd "$dir" && $(compose_cmd) up -d)
+  (cd "$dir" && $compose up -d)
   echo
   success "qBittorrent 安装完成。"
   echo "访问地址："
@@ -295,9 +303,10 @@ EOF
 # =========================
 install_av_stack() {
   local dir="$BASE_DIR/av-stack"
+  local db_online_port avdb_port mdc_port filebrowser_port qb_webui qb_bt emby_port emby_https_port compose
+  compose="$(get_compose_cmd)"
   mkdir -p "$dir"
 
-  local db_online_port avdb_port mdc_port filebrowser_port qb_webui qb_bt emby_port emby_https_port
   db_online_port=$(check_and_prompt_port "db_online" 9090)
   avdb_port=$(check_and_prompt_port "avdb" 8000)
   mdc_port=$(check_and_prompt_port "mdc" 9208)
@@ -475,7 +484,7 @@ networks:
         - subnet: "172.20.0.0/16"
 EOF
 
-  (cd "$dir" && $(compose_cmd) up -d)
+  (cd "$dir" && $compose up -d)
   echo
   success "AV 媒体订阅服务安装完成。"
   echo "访问地址："
@@ -494,9 +503,10 @@ EOF
 # =========================
 install_movie_stack() {
   local dir="$BASE_DIR/movie-stack"
+  local portainer_port filebrowser_port dockercopilot_port qb_webui qb_bt emby_port moviepilot_port cookiecloud_port compose
+  compose="$(get_compose_cmd)"
   mkdir -p "$dir"
 
-  local portainer_port filebrowser_port dockercopilot_port qb_webui qb_bt emby_port moviepilot_port cookiecloud_port
   portainer_port=$(check_and_prompt_port "portainer-zh" 9000)
   filebrowser_port=$(check_and_prompt_port "filebrowser" 1234)
   dockercopilot_port=$(check_and_prompt_port "dockercopilot" 12712)
@@ -641,7 +651,7 @@ services:
     restart: always
 EOF
 
-  (cd "$dir" && $(compose_cmd) up -d)
+  (cd "$dir" && $compose up -d)
   echo
   success "影视订阅服务安装完成。"
   echo "访问地址："
@@ -667,8 +677,11 @@ show_status() {
 
 uninstall_stack() {
   local dir="$1"
+  local compose
+  compose="$(get_compose_cmd)"
+
   if [[ -d "$dir" ]]; then
-    (cd "$dir" && $(compose_cmd) down) || true
+    (cd "$dir" && $compose down) || true
     success "已停止：$dir"
   else
     warn "目录不存在：$dir"
@@ -775,4 +788,5 @@ fi
 require_root
 ensure_base_dir
 check_required_dirs
+check_compose_available
 main_menu
