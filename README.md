@@ -176,6 +176,7 @@ http://服务器IP:1234
 
 #### 访问示例
 
+```
 http://服务器IP:9090
 http://服务器IP:8000
 http://服务器IP:9208
@@ -183,6 +184,7 @@ http://服务器IP:1234
 http://服务器IP:8080
 http://服务器IP:8096
 https://服务器IP:8920
+```
 
 ### 2. 影视订阅服务
 
@@ -210,6 +212,7 @@ https://服务器IP:8920
 
 #### 访问示例
 
+```
 http://服务器IP:9000
 http://服务器IP:1234
 http://服务器IP:12712
@@ -217,6 +220,7 @@ http://服务器IP:8080
 http://服务器IP:8096
 http://服务器IP:3000
 http://服务器IP:8088
+```
 
 ---
 
@@ -247,6 +251,8 @@ http://服务器IP:8088
 
 影视订阅服务安装完成。
 访问地址:
+
+```
 - Portainer: http://服务器IP:9000
 - FileBrowser: http://服务器IP:1234
 - Dockercopilot: http://服务器IP:12712
@@ -254,6 +260,7 @@ http://服务器IP:8088
 - Emby: http://服务器IP:8096
 - MoviePilot: http://服务器IP:3000
 - CookieCloud: http://服务器IP:8088
+```
 
 这样可以快速确认服务入口。
 
