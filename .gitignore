@@ -1,0 +1,46 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Shell history / temp
+.history
+*.log
+*.tmp
+*.bak
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Runtime / generated files
+docker-compose.override.yml
+compose.override.yml
+output/
+logs/
+tmp/
+
+# Docker
+**/.docker/
+**/data/
+**/config/
+**/cache/
+**/db/
+**/volume/
+
+# If you generate local install files
+install/
+dist/
+build/
+
+# Optional: keep README and scripts tracked
+!README.md
+!*.sh
+!LICENSE
